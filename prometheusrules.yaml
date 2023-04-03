@@ -1,0 +1,37 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: developer-team
+  namespace: demo
+  labels:
+    openshift.io/prometheus-rule-evaluation-scope: leaf-prometheus
+spec:
+  groups:
+  - name: example-app
+    rules:
+    - alert: developer-example-app-http-ddos-attack
+      expr: http_requests_total{code="200",method="get"} > 3
+      for: 1m
+      labels:
+        security: ddos
+        severity: warn
+      annotations:
+        summary: "DDOS attack detected, SRE team please investigate"
+        description: "Possible DDOS attack (written by security team)"
+    - alert: developer-example-app-http-massive-ddos-attack
+      expr: http_requests_total{code="200",method="get"} > 10
+      for: 1m
+      labels:
+        security: ddos
+        severity: critical
+      annotations:
+        summary: "Massive DDOS attack, security team page out now"
+        description: "Massive DDOS attack (written by security team)"
+    - alert: developer-example-app-http-error-page
+      expr: http_requests_total{code="404"} > 10
+      for: 1m
+      labels:
+        error: err
+      annotations:
+        summary: "Application failure detected. SRE contact developers now"
+        description: "Apps failure detected (written by developers team)"

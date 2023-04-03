@@ -1,0 +1,51 @@
+global:
+  resolve_timeout: 1m
+  slack_api_url: 'https://hooks.slack.com/services/**masked**/**masked**/**masked**'
+route:
+  receiver: default
+  group_by:
+  - job
+  group_wait: 10s
+  group_interval: 1m
+  repeat_interval: 5m
+  routes:
+  - match:
+      security: ddos
+    receiver: developer-team-pager
+    routes:
+    - match:
+        severity: critical
+      receiver: security-team-pager
+  - match:
+      error: err
+    receiver: developer-team-pager
+  - match:
+      operation: pod-restart
+    receiver: operation-team-pager
+  - match:
+      operation: low-capacity
+    receiver: operation-team-pager
+  - match:
+      operation: high-latency
+    receiver: operation-team-pager
+receivers:
+- name: 'default'
+  slack_configs:
+  - channel: '#monitoring'
+    send_resolved: true
+    text: "\nSummary: {{ .CommonAnnotations.summary }}\nDescription: {{ .CommonAnnotations.description }} "
+- name: 'developer-team-pager'
+  slack_configs:
+  - channel: '#developer'
+    send_resolved: true
+    text: "\nSummary: {{ .CommonAnnotations.summary }}\nDescription: {{ .CommonAnnotations.description }} "
+- name: 'security-team-pager'
+  slack_configs:
+  - channel: '#security'
+    send_resolved: true
+    text: "\nSummary: {{ .CommonAnnotations.summary }}\nDescription: {{ .CommonAnnotations.description }} "
+- name: 'operation-team-pager'
+  slack_configs:
+  - channel: '#operation'
+    send_resolved: true
+    text: "\nSummary: {{ .CommonAnnotations.summary }}\nDescription: {{ .CommonAnnotations.description }} "
